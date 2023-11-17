@@ -5,11 +5,11 @@ const {
   abortLaunchById,
 } = require("../../models/launches.model");
 
-function httpGetAllLaunches(req, res) {
-  return res.status(200).json(getAllLaunches());
+async function httpGetAllLaunches(req, res) {
+  return res.status(200).json(await getAllLaunches());
 }
 
-function httpAddNewLaunch(req, res) {
+async function httpAddNewLaunch(req, res) {
   const launch = req.body;
 
   if (
@@ -27,22 +27,31 @@ function httpAddNewLaunch(req, res) {
     return res.status(400).json({ error: "Invalid launch date" });
   }
 
-  addNewLaunch(launch);
-
+  // just launch
+  await addNewLaunch(launch);
+  // already mutated launch b using Object.assign()
   return res.status(201).json(launch);
 }
 
-function httpAbortLaunch(req, res) {
+async function httpAbortLaunch(req, res) {
   const launchId = Number(req.params.id);
 
-  if (getLaunchById(launchId) === undefined) {
+  const isLaunchExist = (await getLaunchById(launchId)) !== undefined;
+  if (!isLaunchExist) {
     return res.status(404).json({
       error: "Launch not found",
     });
   }
 
-  const aborted = abortLaunchById(launchId);
-  return res.status(201).json(aborted);
+  const aborted = await abortLaunchById(launchId);
+
+  if (!aborted) {
+    return res.status(400).json({
+      error: "Launch ot aborted",
+    });
+  }
+
+  return res.status(201).json({ ok: true });
 }
 
 module.exports = {

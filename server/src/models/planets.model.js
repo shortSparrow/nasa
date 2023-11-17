@@ -1,8 +1,7 @@
 const { parse } = require("csv-parse");
 const fs = require("fs");
 const path = require("path");
-
-const habitablePlanets = [];
+const planets = require("./planets.mongo");
 
 const isHabitablePlanet = (planet) => {
   return (
@@ -22,24 +21,49 @@ function loadPlanetsData() {
           columns: true,
         })
       )
-      .on("data", (data) => {
+      .on("data", async (data) => {
         if (isHabitablePlanet(data)) {
-          habitablePlanets.push(data);
+          // insert + update = upsert
+          savePlanet(data);
         }
       })
       .on("error", (error) => {
         console.log("ERROR: ", error);
         reject(error);
       })
-      .on("end", () => {
-        console.log(`${habitablePlanets.length} habitable planets found!`);
+      .on("end", async () => {
+        const countPlanetsFound = (await getAllPlanets()).length
+        console.log(`${countPlanetsFound} habitable planets found!`);
         resolve();
       });
   });
 }
 
-function getAllPlanets() {
-  return habitablePlanets;
+async function getAllPlanets() {
+  return await planets.find({}); // return all planets
+
+  /**
+   * First {} is filter params. If empty return all planets, in this case return only planets with name 'planet name'
+   * Second {} show should we include field in result or not. 1 means YES, 0 means NO
+   */
+  // return planets.find({keplerName: 'planet name'}, { keplerName: 1 });
+
+  // return planets.find({}, 'keplerName anotherField'); // return all planets and returned data mast contains 2 fields: keplerName and anotherField
+  // return planets.find({}, '-keplerName anotherField'); // return all planets must exclude keplerName and contains  anotherField
+}
+
+async function savePlanet(planet) {
+  try {
+    await planets.updateOne(
+      {
+        keplerName: planet.kepler_name,
+      },
+      { keplerName: planet.kepler_name },
+      { upsert: true }
+    );
+  } catch (err) {
+    console.log(`Could not save planet: ${err}`);
+  }
 }
 
 module.exports = {
