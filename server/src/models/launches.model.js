@@ -14,7 +14,7 @@ const launch = {
   success: true,
 };
 
-saveLaunch(launch);
+saveLaunch(launch); // TODO maybe delete
 
 async function getAllLaunches() {
   return await launches.find({}, { __v: 0, _id: 0 });
@@ -34,7 +34,7 @@ async function addNewLaunch(launch) {
     flightNumber: newFlightNumber,
     customers: ["Zero To Mastery", "NASA"],
   });
-  saveLaunch(newLaunch);
+  await saveLaunch(newLaunch);
 }
 
 async function saveLaunch(launch) {
