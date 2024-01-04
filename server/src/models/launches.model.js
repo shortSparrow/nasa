@@ -4,6 +4,7 @@ const launches = require("./launches.mongo.js");
 const planets = require("./planets.mongo.js");
 
 const SPACE_X_API_URI = "https://api.spacexdata.com/v5/launches/query";
+const DEFAULT_FLIGHT_NUMBER = 0;
 
 async function getAllLaunches(skip, limit) {
   return await launches
@@ -16,7 +17,7 @@ async function getAllLaunches(skip, limit) {
 async function getLatestFlightNumber() {
   const latestLaunch = await launches.findOne().sort("-flightNumber"); // - DESC order
 
-  return latestLaunch.flightNumber ?? DEFAULT_FLIGHT_NUMBER;
+  return latestLaunch?.flightNumber ?? DEFAULT_FLIGHT_NUMBER;
 }
 
 async function addNewLaunch(launch) {

@@ -6,11 +6,9 @@ on:
     branches: [main]
 jobs:
   build:
-    env:
-      CI: true # disable watch mode (for test for example)
     strategy:
       matrix:
-        node-version: [16.x, 20.6.1.x]
+        node-version: [16.x, 20.6.1]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
